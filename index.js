@@ -1,22 +1,24 @@
-const config = require("./config.json") // Message Tau#0001 for more information
+import fs from "fs";
 
-const Discord = require('discord.js');
+const config = JSON.parse(fs.readFileSync("./config.json").toString()); // Message Tau#0001 for more information
+
+import Discord from "discord.js";
+
 const client = new Discord.Client();
 
-client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
+import EventHandler from "./src/core/EventHandler.js";
+import SuggestionsCommand from "./src/suggestions/SuggestionsCommand.js";
+import HelloWorldListener from "./src/autoreply/HelloWorldListener.js";
+
+client.on("ready", () => {
+    console.log(`Logged in as ${client.user.tag}!`);
 });
 
-client.on('message', msg => {
-  if (msg.content === 'ping') {
-    msg.reply('Pong!');
-  }
-  if(/f+u+(?:c*k+|c+k*) m+e+/g.test(msg.content)) {
-    msg.reply("I think I'll pass...");
-  }
-  if(msg.content === "fuck me") {
-    msg.reply("I think I'll pass...");
-  }
-});
+const handler = new EventHandler(client, {}, "-");
 
-client.login(config['token']);
+handler.registerCommand(SuggestionsCommand);
+handler.registerListener(HelloWorldListener);
+
+handler.initialize();
+
+client.login(config["token"]);

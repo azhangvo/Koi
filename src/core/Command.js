@@ -24,26 +24,39 @@ class Command {
 
     run(msg) {
         if (
-            msg.content.toLowerCase().startsWith(
-                this.getPrefix() + this.getCommand() + " "
-            ) || (this.args && msg.content.toLowerCase() === this.getPrefix() + this.getCommand())
+            msg.content
+                .toLowerCase()
+                .startsWith(this.getPrefix() + this.getCommand() + " ") ||
+            msg.content.toLowerCase() === this.getPrefix() + this.getCommand()
         ) {
             if (this.checkPermission(msg)) {
                 let args = [];
                 if (this.args > 0) {
                     let preprocessed_args = msg.content.split(" ");
                     preprocessed_args.shift();
-                    while (args.length < this.args - 1 && preprocessed_args.length > 0) {
+                    if (preprocessed_args.length < this.args) {
+                        msg.channel.send(
+                            "You seem to be missing some arguments"
+                        );
+                        return true;
+                    }
+                    while (
+                        args.length < this.args - 1 &&
+                        preprocessed_args.length > 0
+                    ) {
                         args.push(preprocessed_args[0]);
                         preprocessed_args.shift();
                     }
-                    if (preprocessed_args.length > 0 && args.length < this.args) {
+                    if (
+                        preprocessed_args.length > 0 &&
+                        args.length < this.args
+                    ) {
                         args.push(preprocessed_args.join(" "));
                     }
                 }
                 this.execute(msg, args);
+                return true;
             }
-            return true;
         }
         return false;
     }
