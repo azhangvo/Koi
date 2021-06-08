@@ -9,16 +9,20 @@ const client = new Discord.Client();
 import EventHandler from "./src/core/EventHandler.js";
 import SuggestionsCommand from "./src/suggestions/SuggestionsCommand.js";
 import HelloWorldListener from "./src/autoreply/HelloWorldListener.js";
+import Store from "./src/core/Store.js";
 
 client.on("ready", () => {
     console.log(`Logged in as ${client.user.tag}!`);
 });
 
-const handler = new EventHandler(client, {}, "-");
+const store = new Store("./store.json");
+const handler = new EventHandler(client, store, "-");
 
 handler.registerCommand(SuggestionsCommand);
 handler.registerListener(HelloWorldListener);
 
 handler.initialize();
+
+store.initialize();
 
 client.login(config["token"]);
