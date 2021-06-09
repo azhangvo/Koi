@@ -4,7 +4,9 @@ const config = JSON.parse(fs.readFileSync("./config.json").toString()); // Messa
 
 import Discord from "discord.js";
 
-const client = new Discord.Client();
+const client = new Discord.Client({
+    partials: ["MESSAGE", "CHANNEL", "REACTION"],
+});
 
 import EventHandler from "./src/core/EventHandler.js";
 import SuggestionsCommand from "./src/suggestions/SuggestionsCommand.js";
@@ -13,6 +15,7 @@ import ServerConfigCommand from "./src/config/ServerConfigCommand.js";
 
 import Store from "./src/core/Store.js";
 import path from "path";
+import SuggestionsReactionListener from "./src/suggestions/SuggestionsReactionListener.js";
 
 client.on("ready", () => {
     console.log(`Logged in as ${client.user.tag}!`);
@@ -26,9 +29,12 @@ const handler = new EventHandler(client, store, prefix);
 handler.registerCommand(SuggestionsCommand);
 handler.registerCommand(ServerConfigCommand);
 handler.registerListener(HelloWorldListener);
+handler.registerReactionListener(SuggestionsReactionListener);
 
 handler.initialize();
 
 store.initialize();
 
-client.login(config["token"]);
+client.login(config["token"]).then(() => {
+    store.set("info.userid", client.user.id);
+});
