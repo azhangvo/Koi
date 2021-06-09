@@ -19,6 +19,9 @@ class EventHandler {
         let commands = this.commands;
         let listeners = this.listeners;
         this.client.on("message", (msg) => {
+            if(msg.author.bot)
+                return;
+
             for(let i = 0; i < commands.length; i++) {
                 if(commands[i].run(msg)) {
                     return;

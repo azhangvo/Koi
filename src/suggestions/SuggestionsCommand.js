@@ -1,4 +1,5 @@
 import Command from "../core/Command.js";
+import { MessageEmbed } from "discord.js";
 
 class SuggestionsCommand extends Command {
     constructor(store, prefix) {
@@ -6,7 +7,22 @@ class SuggestionsCommand extends Command {
     }
 
     execute(msg, args) {
-        msg.reply("Sorry, but this command is unfinished.")
+        msg.channel.send("Creating your suggestion")
+
+        const embed = new MessageEmbed();
+        embed.setColor(0xffffff);
+        embed.setAuthor(msg.author.tag, msg.author.avatarURL())
+        embed.setTitle(`${msg.author.username}'s suggestion`)
+        embed.setDescription(`${args[0]} ([link](${msg.url}))`)
+        embed.setFooter(`Suggest with ${this.prefix}suggest`);
+
+        const suggestions_channel = msg.guild.channels.resolve(
+            this.store.getServerConfig(msg.guild, "channels.suggestions")
+        );
+        suggestions_channel.send(embed).then((msg) => {
+            msg.react("✅");
+            msg.react("❌")
+        });
     }
 }
 
