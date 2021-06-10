@@ -26,7 +26,11 @@ class SuggestionsReactionListener extends ReactionListener {
 
             const embed = new MessageEmbed();
             embed.setColor(0xeeeeee);
-            embed.setAuthor(old_embed.author.name, old_embed.author.iconURL, old_embed.author.url);
+            embed.setAuthor(
+                old_embed.author.name,
+                old_embed.author.iconURL,
+                old_embed.author.url
+            );
             embed.setTitle(old_embed.title);
             embed.setDescription(old_embed.description);
             embed.setFooter(old_embed.footer.text);
@@ -35,10 +39,13 @@ class SuggestionsReactionListener extends ReactionListener {
             let negative_votes = msg.reactions.resolve("❌").count - 1;
             let total_votes = positive_votes + negative_votes || 1;
 
-            let title = positive_votes >= 7 ? embed.fields[0].name : "Voting concluded";
+            let title =
+                positive_votes >= 7
+                    ? "Voting concluded"
+                    : old_embed.fields[0].name;
 
             embed.addField(
-                "Voting",
+                title,
                 `${positive_votes} ✅ \`${(
                     positive_votes / total_votes
                 ).toFixed(3)}\` | ${negative_votes} ❌ \`${(
@@ -46,15 +53,21 @@ class SuggestionsReactionListener extends ReactionListener {
                 ).toFixed(3)}\``
             );
 
-            reaction.message.edit({embed});
+            reaction.message.edit({ embed });
 
             if (positive_votes >= 7 && old_embed.fields[0].name === "Voting") {
-                if (msg.guild.owner.partial) {
-                    msg.guild.owner.fetch().then(() => {
-                        msg.channel.send(msg.guild.owner.toString());
+                let owner =
+                    msg.guild.members.resolve(msg.guild.ownerID) ||
+                    msg.guild.owner;
+
+                if (!owner) {
+                    msg.guild.fetch().then(() => {
+                        owner = msg.guild.members.resolve(msg.guild.ownerID) ||
+                            msg.guild.owner;
+                        msg.channel.send(owner.toString());
                     });
                 } else {
-                    msg.channel.send(msg.guild.owner.toString());
+                    msg.channel.send(owner.toString());
                 }
             }
         } catch (e) {

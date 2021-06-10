@@ -16,6 +16,7 @@ import ServerConfigCommand from "./src/config/ServerConfigCommand.js";
 import Store from "./src/core/Store.js";
 import path from "path";
 import SuggestionsReactionListener from "./src/suggestions/SuggestionsReactionListener.js";
+import BanCommand from "./src/moderation/ban/BanCommand.js";
 
 client.on("ready", () => {
     console.log(`Logged in as ${client.user.tag}!`);
@@ -28,6 +29,7 @@ const handler = new EventHandler(client, store, prefix);
 
 handler.registerCommand(SuggestionsCommand);
 handler.registerCommand(ServerConfigCommand);
+handler.registerCommand(BanCommand);
 handler.registerListener(HelloWorldListener);
 handler.registerReactionListener(SuggestionsReactionListener);
 
