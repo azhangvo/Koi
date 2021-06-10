@@ -38,18 +38,20 @@ class SuggestionsCommand extends Command {
 
         embed.addField("Voting", `0 ✅ \`0.000\` | 0 ❌ \`0.000\``);
 
-        suggestions_channel.send(embed).then((suggestion) => {
-            suggestion.react("✅").then(() => {
-                suggestion.react("❌").then(() => {
-                    reply.then((reply) => {
-                        reply_embed.setDescription(
-                            `Created your [suggestion](${suggestion.url})`
-                        );
-                        reply.edit({ embed: reply_embed });
+        suggestions_channel
+            .send(embed, { disableMentions: "all" })
+            .then((suggestion) => {
+                suggestion.react("✅").then(() => {
+                    suggestion.react("❌").then(() => {
+                        reply.then((reply) => {
+                            reply_embed.setDescription(
+                                `Created your [suggestion](${suggestion.url})`
+                            );
+                            reply.edit({ embed: reply_embed });
+                        });
                     });
                 });
             });
-        });
     }
 }
 
