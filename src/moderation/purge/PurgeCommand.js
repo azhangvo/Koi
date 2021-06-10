@@ -15,12 +15,11 @@ class PurgeCommand extends Command {
 
         let purge_amount = parseInt(args[0]);
         if (isNaN(purge_amount) || purge_amount <= 0) {
-            let reply = await msg.channel
-                .send(
-                    new MessageEmbed({
-                        description: `${args[0]} is not a valid input`,
-                    }),
-                );
+            let reply = await msg.channel.send(
+                new MessageEmbed({
+                    description: `${args[0]} is not a valid input`,
+                })
+            );
             await reply.delete({ timeout: 5000 });
         }
 
@@ -32,7 +31,7 @@ class PurgeCommand extends Command {
             new MessageEmbed({
                 description: `Purged ${purge_amount} messages.`,
                 color: 0x2f2f2f,
-            }),
+            })
         );
         await reply.delete({ timeout: 5000 });
     }
