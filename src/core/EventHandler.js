@@ -24,16 +24,16 @@ class EventHandler {
         let commands = this.commands;
         let listeners = this.listeners;
         let reaction_listeners = this.reaction_listeners;
-        this.client.on("message", (msg) => {
+        this.client.on("message", async (msg) => {
             if (msg.author.bot) return;
 
             for (let i = 0; i < commands.length; i++) {
-                if (commands[i].run(msg)) {
+                if (await commands[i].run(msg)) {
                     return;
                 }
             }
             for (let i = 0; i < listeners.length; i++) {
-                if (listeners[i].run(msg)) {
+                if (await listeners[i].run(msg)) {
                     return;
                 }
             }

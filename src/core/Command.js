@@ -22,7 +22,7 @@ class Command {
         return true;
     }
 
-    run(msg) {
+    async run(msg) {
         if (
             msg.content
                 .toLowerCase()
@@ -61,7 +61,7 @@ class Command {
         return false;
     }
 
-    execute(msg, args) {
+    async execute(msg, args) {
         throw new Error("Abstract function has no implementation.");
     }
 }

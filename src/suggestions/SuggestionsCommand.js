@@ -47,7 +47,7 @@ class SuggestionsCommand extends Command {
                             reply_embed.setDescription(
                                 `Created your [suggestion](${suggestion.url})`
                             );
-                            reply.edit({ embed: reply_embed });
+                            reply.edit({ embed: reply_embed }).catch(console.log);
                         });
                     });
                 });

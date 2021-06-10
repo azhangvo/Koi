@@ -14,7 +14,7 @@ class Listener {
         throw new Error("Abstract function has no implementation.");
     }
 
-    run(msg) {
+    async run(msg) {
         if (this.checkConditions(msg)) {
             if (this.checkPermission(msg)) {
                 this.execute(msg);
@@ -24,7 +24,7 @@ class Listener {
         return false;
     }
 
-    execute(msg) {
+    async execute(msg) {
         throw new Error("Abstract function has no implementation.");
     }
 }
