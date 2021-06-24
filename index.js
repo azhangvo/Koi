@@ -6,6 +6,7 @@ import Discord from "discord.js";
 
 const client = new Discord.Client({
     partials: ["MESSAGE", "CHANNEL", "REACTION"],
+    disableMentions: "everyone",
 });
 
 import EventHandler from "./src/core/EventHandler.js";

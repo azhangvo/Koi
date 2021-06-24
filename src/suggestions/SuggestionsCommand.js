@@ -39,7 +39,7 @@ class SuggestionsCommand extends Command {
         embed.addField("Voting", `0 ✅ \`0.000\` | 0 ❌ \`0.000\``);
 
         suggestions_channel
-            .send(embed, { disableMentions: "all" })
+            .send(embed)
             .then((suggestion) => {
                 suggestion.react("✅").then(() => {
                     suggestion.react("❌").then(() => {
