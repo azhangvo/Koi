@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "type": "module",
   "scripts": {
-    "start": "node index.js",
-    "daemon": "node index.js &",
+    "start": "npm run build & node build/index.js",
+    "daemon": "npm run build & node build/index.js &",
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/azhangvo/WHSBot#readme",
   "dependencies": {
+    "@types/node": "^16.6.1",
     "discord.js": "^12.5.1",
     "fs": "^0.0.1-security"
   },

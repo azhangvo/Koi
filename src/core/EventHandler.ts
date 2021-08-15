@@ -1,5 +1,18 @@
+import { Client, Constructable, MessageReaction, PartialUser, User } from "discord.js";
+import Store from "./Store";
+import Command from "./Command";
+import Listener from "./Listener";
+import ReactionListener from "./ReactionListener";
+
 class EventHandler {
-    constructor(client, store, prefix) {
+    private client: Client;
+    private readonly store: Store;
+    private readonly prefix: string;
+    private commands: Command[];
+    private listeners: Listener[];
+    private reaction_listeners: ReactionListener[];
+
+    constructor(client: Client, store: Store, prefix: string) {
         this.client = client;
         this.store = store;
         this.prefix = prefix;
@@ -8,15 +21,15 @@ class EventHandler {
         this.reaction_listeners = [];
     }
 
-    registerCommand(CommandClass) {
+    registerCommand(CommandClass: Constructable<Command>) {
         this.commands.push(new CommandClass(this.store, this.prefix));
     }
 
-    registerListener(ListenerClass) {
+    registerListener(ListenerClass: Constructable<Listener>) {
         this.listeners.push(new ListenerClass(this.store));
     }
 
-    registerReactionListener(ReactionListenerClass) {
+    registerReactionListener(ReactionListenerClass: Constructable<ReactionListener>) {
         this.reaction_listeners.push(new ReactionListenerClass(this.store));
     }
 
@@ -39,13 +52,16 @@ class EventHandler {
             }
         });
 
-        this.client.on("messageReactionAdd", async (reaction, user) => {
+        this.client.on("messageReactionAdd", async (reaction: MessageReaction, user: User | PartialUser ) => {
             if (reaction.partial) {
                 // If the message this reaction belongs to was removed, the fetching might result in an API error which should be handled
                 try {
                     await reaction.fetch();
                 } catch (error) {
-                    console.error('Something went wrong when fetching the message: ', error);
+                    console.error(
+                        "Something went wrong when fetching the message: ",
+                        error
+                    );
                     // Return as `reaction.message.author` may be undefined/null
                     return;
                 }
@@ -66,7 +82,10 @@ class EventHandler {
                 try {
                     await reaction.fetch();
                 } catch (error) {
-                    console.error('Something went wrong when fetching the message: ', error);
+                    console.error(
+                        "Something went wrong when fetching the message: ",
+                        error
+                    );
                     // Return as `reaction.message.author` may be undefined/null
                     return;
                 }

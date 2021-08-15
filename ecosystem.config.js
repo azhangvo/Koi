@@ -1,7 +1,7 @@
 module.exports = {
   apps : [{
     name: 'WHSBot',
-    script: 'index.js',
+    script: 'index.ts',
 
     // Options reference: https://pm2.keymetrics.io/docs/usage/application-declaration/
     args: '',

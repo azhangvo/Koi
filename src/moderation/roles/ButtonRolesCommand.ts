@@ -1,16 +1,21 @@
-import Command from "../../core/Command.js";
+import Command from "../../core/Command";
 import { Message, MessageEmbed } from "discord.js";
+import Store from "../../core/Store";
+import Constants from "../../core/Constants";
 
 class ButtonRolesCommand extends Command {
-    constructor(store, prefix) {
-        super(store, prefix, "roles", 1);
+    constructor(store: Store, prefix: string) {
+        super(store, prefix, "roles", 4);
     }
 
-    checkPermission(msg) {
-        return msg.member.permissions.has("MANAGE_MESSAGES");
+    checkPermission(msg: Message) {
+        if (msg.member) {
+            return msg.member.permissions.has("MANAGE_GUILD");
+        }
+        return false;
     }
 
-    async execute(msg, args) {
+    async execute(msg: Message, args: string[]) {
         if (args.length === 0) {
             await msg.channel.send(
                 new MessageEmbed({
@@ -33,12 +38,10 @@ class ButtonRolesCommand extends Command {
                         await msg.channel.send(
                             new MessageEmbed({
                                 color: 0x2f2f2f,
-                                description:
-                                    "Setting up...",
+                                description: "Setting up...",
                             })
                         );
                     } else {
-
                     }
                     break;
                 case "add":
@@ -74,16 +77,14 @@ class ButtonRolesCommand extends Command {
                         await msg.channel.send(
                             new MessageEmbed({
                                 color: 0x2f2f2f,
-                                description:
-                                    "Setting up...",
+                                description: "Setting up...",
                             })
                         );
                     } else {
                         await msg.channel.send(
                             new MessageEmbed({
                                 color: 0x89023e,
-                                description:
-                                    `Roles message already exists. You must force the command if you would like to continue.\nUsage: \`roles setup ${args[1]} force\``,
+                                description: `Roles message already exists. You must force the command if you would like to continue.\nUsage: \`roles setup ${args[1]} force\``,
                             })
                         );
                     }
@@ -92,18 +93,19 @@ class ButtonRolesCommand extends Command {
                     await msg.channel.send(
                         new MessageEmbed({
                             color: 0x89023e,
-                            description:
-                                `Usage: \`roles add ${args[1]} <display name> <id>\``,
+                            description: `Usage: \`roles add ${args[1]} <display name> <id>\``,
                         })
                     );
                     break;
                 case "remove":
-                    if (this.store.getServerConfig(msg.guild, "reactroles.") === null) {
+                    if (
+                        this.store.getServerConfig(msg.guild, "reactroles.") ===
+                        null
+                    ) {
                         await msg.channel.send(
                             new MessageEmbed({
                                 color: 0x89023e,
-                                description:
-                                    `The role \`${args[1]}\` was not found. Make sure you are using a display name, not an ID.`,
+                                description: `The role \`${args[1]}\` was not found. Make sure you are using a display name, not an ID.`,
                             })
                         );
                     }
@@ -118,21 +120,93 @@ class ButtonRolesCommand extends Command {
                     break;
             }
         } else if (args.length === 3) {
-
+            switch (args[0]) {
+                case "add":
+                    break;
+                default:
+                    break;
+            }
         } else if (args.length === 4) {
-            switch(args[0]) {
+            switch (args[0]) {
                 case "add":
                     let progressMessage = await msg.channel.send(
                         new MessageEmbed({
                             color: 0x2f2f2f,
-                            description:
-                                "Adding...",
+                            description: "Adding...",
                         })
                     );
-                    let roles = this.store.getServerConfig(msg.guild, "buttonroles.roles") // Dictionary with category: [ [ name, id ] ]
-                    for (let category in roles.keys()) {
 
+                    let reconstruction = args[2] + " " + args[3];
+                    let split = reconstruction.split(" ");
+                    let category = args[1]
+                    let id: string = split[split.length - 1];
+                    let name: string = "";
+
+                    if (split.length > 2) {
+                        if (
+                            split[0].startsWith('"') &&
+                            split[split.length - 2].endsWith('"')
+                        ) {
+                            name = split.slice(0, -1).join(" ").slice(1, -1);
+                        } else {
+                            await progressMessage.edit(
+                                new MessageEmbed({
+                                    color: Constants.red,
+                                    description:
+                                        "Something seems to be formatted wrong in your command.",
+                                })
+                            );
+                            return;
+                        }
+                    } else {
+                        name = args[2];
                     }
+
+                    let data = this.store.getServerConfig(
+                        msg.guild,
+                        "buttonroles.roles"
+                    ); // Dictionary with category: [ [ name, id ] ]
+
+                    console.log(Object.keys(data))
+                    for (let itr_category in data) {
+                        if (!data.hasOwnProperty(itr_category)) continue;
+                        let roles: string[][] = data[itr_category];
+                        console.log(roles)
+                        for (let i in roles) {
+                            if (roles[i][0] === name) {
+                                await progressMessage.edit(
+                                    new MessageEmbed({
+                                        color: Constants.red,
+                                        description: `The role \`${roles[i][0]}\` seems to already exist and is linked to \`${roles[i][1]}\` in category \`${itr_category}\`.`,
+                                    })
+                                );
+                                return;
+                            }
+                            if (roles[i][1] === id) {
+                                await progressMessage.edit(
+                                    new MessageEmbed({
+                                        color: Constants.red,
+                                        description: `Id \`${roles[i][1]}\` is already assigned to role \`${roles[i][0]}\` in category \`${itr_category}\`.`,
+                                    })
+                                );
+                                return;
+                            }
+                        }
+                    }
+                    // if(!data.hasOwnProperty(category)) {
+                    //     data[category] = []
+                    // }
+                    // data[category].push([name, id])
+                    // console.log(data)
+                    //
+                    // await progressMessage.edit(new MessageEmbed({
+                    //     color: Constants.black,
+                    //     description: `Successfully added ${name} (${id}) to ${category}.`
+                    // }))
+
+                    break;
+                default:
+                    break;
             }
         }
     }

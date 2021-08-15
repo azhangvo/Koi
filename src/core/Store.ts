@@ -1,10 +1,16 @@
+import { Guild } from "discord.js";
 import fs from "fs";
 
 class Store {
     static default_store = { prefix: "ඞ" };
-    static default_server_config = { channels: { suggestions: undefined }, buttonroles: { channels: {}, roles: {}} };
+    static default_server_config = {
+        channels: { suggestions: undefined },
+        buttonroles: { channels: {}, roles: {} },
+    };
+    private readonly path: string;
+    private data: any;
 
-    constructor(path) {
+    constructor(path: string) {
         this.path = path;
         if (!fs.existsSync(this.path))
             fs.writeFileSync(
@@ -14,8 +20,8 @@ class Store {
         this.data = JSON.parse(fs.readFileSync(this.path).toString());
     }
 
-    set(key, value) {
-        let keys = key.split(".");
+    set(key: string, value: any) {
+        let keys: string[] = key.split(".");
         let cur = this.data;
         for (let i = 0; i < keys.length - 1; i++) {
             if (!cur.hasOwnProperty(keys[i])) cur[keys[i]] = {};
@@ -26,7 +32,7 @@ class Store {
         return true;
     }
 
-    _get(key, json) {
+    _get(key: string, json: any) {
         let cur = json;
         let keys = key.split(".");
         for (let i = 0; i < keys.length - 1; i++) {
@@ -37,11 +43,14 @@ class Store {
         return cur[keys[keys.length - 1]];
     }
 
-    get(key) {
+    get(key: string) {
         return this._get(key, this.data);
     }
 
-    getServerConfig(guild, key) {
+    getServerConfig(guild: Guild | null, key: any) {
+        if (guild == null) {
+            return null;
+        }
         let guild_key = `guilds.${guild.id}`;
         if (!this.exists(`${guild_key}.${key}`)) {
             if (!this._exists(key, Store.default_server_config)) {
@@ -55,7 +64,7 @@ class Store {
         return this.get(`${guild_key}.${key}`);
     }
 
-    setServerConfig(guild, key, value) {
+    setServerConfig(guild: { id: any }, key: any, value: any) {
         let guild_key = `guilds.${guild.id}`;
         if (!this._exists(key, Store.default_server_config)) {
             return false;
@@ -64,7 +73,7 @@ class Store {
         return true;
     }
 
-    _exists(key, json) {
+    _exists(key: string, json: any) {
         let cur = json;
         let keys = key.split(".");
         for (let i = 0; i < keys.length - 1; i++) {
@@ -75,7 +84,7 @@ class Store {
         return cur.hasOwnProperty(keys[keys.length - 1]);
     }
 
-    exists(key) {
+    exists(key: string) {
         return this._exists(key, this.data);
     }
 

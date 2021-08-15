@@ -1,0 +1,57 @@
+import fs from "fs";
+
+const config = JSON.parse(fs.readFileSync("./config.json").toString()); // Message Tau#0001 for more information
+
+import Discord from "discord.js";
+
+const client = new Discord.Client({
+    partials: ["MESSAGE", "CHANNEL", "REACTION"],
+    disableMentions: "everyone",
+});
+
+import EventHandler from "./src/core/EventHandler";
+import SuggestionsCommand from "./src/suggestions/SuggestionsCommand";
+import HelloWorldListener from "./src/autoreply/HelloWorldListener";
+import ServerConfigCommand from "./src/config/ServerConfigCommand";
+
+import Store from "./src/core/Store";
+import path from "path";
+import SuggestionsReactionListener from "./src/suggestions/SuggestionsReactionListener";
+import BanCommand from "./src/moderation/ban/BanCommand";
+import PurgeCommand from "./src/moderation/purge/PurgeCommand";
+import ButtonRolesCommand from "./src/moderation/roles/ButtonRolesCommand";
+
+client.on("ready", () => {
+    if(client.user != null) {
+        console.log(`Logged in as ${client.user.tag}!`);
+    } else {
+        console.log("Client User is null! Please terminate this instance.")
+    }
+});
+
+const store = new Store(path.resolve("./store.json"));
+
+let prefix: string = store.get("prefix");
+const handler: EventHandler = new EventHandler(client, store, prefix);
+
+handler.registerCommand(SuggestionsCommand);
+handler.registerCommand(ServerConfigCommand);
+handler.registerCommand(BanCommand);
+handler.registerCommand(PurgeCommand);
+handler.registerCommand(ButtonRolesCommand);
+handler.registerListener(HelloWorldListener);
+handler.registerReactionListener(SuggestionsReactionListener);
+
+handler.initialize();
+
+store.initialize();
+
+client.login(config["token"]).then(() => {
+    if (client.user != null) {
+        store.set("info.userid", client.user.id);
+    } else {
+        console.log(
+            "UserID is null! Please terminate this instance and try again"
+        );
+    }
+});

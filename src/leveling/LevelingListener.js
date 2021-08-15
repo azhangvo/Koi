@@ -1,4 +1,4 @@
-import Listener from "../core/Listener.js";
+import Listener from "../core/Listener.ts";
 
 class LevelingListener extends Listener {
     checkConditions(msg) {

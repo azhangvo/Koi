@@ -1,5 +1,20 @@
+import { Message } from "discord.js";
+import Store from "./Store";
+
 class Command {
-    constructor(store, prefix, command, args, ...aliases) {
+    protected store: Store;
+    private readonly args: number;
+    protected readonly prefix: string;
+    private readonly command: string;
+    private aliases: string[];
+
+    constructor(
+        store: Store,
+        prefix: string,
+        command: string,
+        args: number,
+        ...aliases: string[]
+    ) {
         if (this.constructor === Command) {
             throw new Error("Abstract class cannot be instantiated.");
         }
@@ -18,11 +33,11 @@ class Command {
         return this.command;
     }
 
-    checkPermission(msg) {
+    checkPermission(msg: Message) {
         return true;
     }
 
-    async run(msg) {
+    async run(msg: Message) {
         if (
             msg.content
                 .toLowerCase()
@@ -55,7 +70,7 @@ class Command {
         return false;
     }
 
-    async execute(msg, args) {
+    async execute(msg: Message, args: string[]) {
         throw new Error("Abstract function has no implementation.");
     }
 }

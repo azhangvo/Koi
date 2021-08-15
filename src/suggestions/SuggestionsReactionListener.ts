@@ -1,13 +1,18 @@
-import ReactionListener from "../core/ReactionListener.js";
-import { MessageEmbed } from "discord.js";
+import ReactionListener from "../core/ReactionListener";
+import { MessageEmbed, MessageReaction, PartialUser, User } from "discord.js";
+import Store from "../core/Store";
 
 class SuggestionsReactionListener extends ReactionListener {
-    constructor(store) {
+    constructor(store: Store) {
         super(store);
     }
 
-    checkConditions(event) {
-        if (event.user.bot) return false;
+    checkConditions(event: {
+        reaction: MessageReaction;
+        user: User | PartialUser;
+        type: string;
+    }) {
+        if (!event.user || event.user.bot) return false;
         let { reaction } = event;
         let msg = reaction.message;
         if (msg.author.id !== this.store.get("info.userid")) {
@@ -18,7 +23,11 @@ class SuggestionsReactionListener extends ReactionListener {
         return msg.embeds[0].title.includes("'s suggestion");
     }
 
-    execute(event) {
+    execute(event: {
+        reaction: MessageReaction;
+        user: User | PartialUser;
+        type: string;
+    }) {
         try {
             let { reaction } = event;
             let msg = reaction.message;
@@ -26,17 +35,18 @@ class SuggestionsReactionListener extends ReactionListener {
 
             const embed = new MessageEmbed();
             embed.setColor(0xeeeeee);
-            embed.setAuthor(
-                old_embed.author.name,
-                old_embed.author.iconURL,
-                old_embed.author.url
-            );
+            if (old_embed.author)
+                embed.setAuthor(
+                    old_embed.author.name,
+                    old_embed.author.iconURL,
+                    old_embed.author.url
+                );
             embed.setTitle(old_embed.title);
             embed.setDescription(old_embed.description);
-            embed.setFooter(old_embed.footer.text);
+            if (old_embed.footer) embed.setFooter(old_embed.footer.text);
 
-            let positive_votes = msg.reactions.resolve("✅").count - 1;
-            let negative_votes = msg.reactions.resolve("❌").count - 1;
+            let positive_votes = (msg.reactions.resolve("✅")?.count || 1) - 1;
+            let negative_votes = (msg.reactions.resolve("❌")?.count || 1) - 1;
             let total_votes = positive_votes + negative_votes || 1;
 
             let title =
@@ -56,15 +66,18 @@ class SuggestionsReactionListener extends ReactionListener {
             reaction.message.edit({ embed });
 
             if (positive_votes >= 7 && old_embed.fields[0].name === "Voting") {
+                if (!msg.guild) return;
                 let owner =
                     msg.guild.members.resolve(msg.guild.ownerID) ||
                     msg.guild.owner;
 
                 if (!owner) {
                     msg.guild.fetch().then(() => {
-                        owner = msg.guild.members.resolve(msg.guild.ownerID) ||
+                        if (!msg.guild) return;
+                        owner =
+                            msg.guild.members.resolve(msg.guild.ownerID) ||
                             msg.guild.owner;
-                        msg.channel.send(owner.toString());
+                        if (owner) msg.channel.send(owner.toString());
                     });
                 } else {
                     msg.channel.send(owner.toString());

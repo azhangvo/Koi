@@ -1,30 +1,35 @@
+import Store from "./Store";
+import { Message } from "discord.js";
+
 class Listener {
-    constructor(store) {
+    private store: Store;
+
+    constructor(store: Store) {
         if (this.constructor === Listener) {
             throw new Error("Abstract class cannot be instantiated.");
         }
         this.store = store;
     }
 
-    checkPermission(msg) {
+    checkPermission(msg: Message) {
         return true;
     }
 
-    checkConditions(msg) {
+    checkConditions(msg: Message): boolean {
         throw new Error("Abstract function has no implementation.");
     }
 
-    async run(msg) {
+    async run(msg: Message) {
         if (this.checkConditions(msg)) {
             if (this.checkPermission(msg)) {
-                this.execute(msg);
+                await this.execute(msg);
                 return true;
             }
         }
         return false;
     }
 
-    async execute(msg) {
+    async execute(msg: Message) {
         throw new Error("Abstract function has no implementation.");
     }
 }
