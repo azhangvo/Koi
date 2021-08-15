@@ -1,4 +1,4 @@
-import Command from "../core/Command.js";
+import Command from "../core/Command.ts";
 import { MessageEmbed } from "discord.js";
 
 class SuggestionsCommand extends Command {

@@ -19,6 +19,7 @@ import path from "path";
 import SuggestionsReactionListener from "./src/suggestions/SuggestionsReactionListener.js";
 import BanCommand from "./src/moderation/ban/BanCommand.js";
 import PurgeCommand from "./src/moderation/purge/PurgeCommand.js";
+import ButtonRolesCommand from "./src/moderation/roles/ButtonRolesCommand.ts";
 
 client.on("ready", () => {
     console.log(`Logged in as ${client.user.tag}!`);
@@ -33,6 +34,7 @@ handler.registerCommand(SuggestionsCommand);
 handler.registerCommand(ServerConfigCommand);
 handler.registerCommand(BanCommand);
 handler.registerCommand(PurgeCommand);
+handler.registerCommand(ButtonRolesCommand)
 handler.registerListener(HelloWorldListener);
 handler.registerReactionListener(SuggestionsReactionListener);
 

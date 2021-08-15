@@ -1,4 +1,4 @@
-import Command from "../core/Command.js";
+import Command from "../core/Command.ts";
 
 class ServerConfigCommand extends Command {
     constructor(store, prefix) {

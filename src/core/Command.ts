@@ -34,12 +34,6 @@ class Command {
                 if (this.args > 0) {
                     let preprocessed_args = msg.content.split(" ");
                     preprocessed_args.shift();
-                    if (preprocessed_args.length < this.args) {
-                        msg.channel.send(
-                            "You seem to be missing some arguments"
-                        );
-                        return true;
-                    }
                     while (
                         args.length < this.args - 1 &&
                         preprocessed_args.length > 0
@@ -54,7 +48,7 @@ class Command {
                         args.push(preprocessed_args.join(" "));
                     }
                 }
-                this.execute(msg, args);
+                await this.execute(msg, args);
                 return true;
             }
         }

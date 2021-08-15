@@ -1,4 +1,4 @@
-import Command from "../../core/Command.js";
+import Command from "../../core/Command.ts";
 import { MessageEmbed } from "discord.js";
 
 class BanCommand extends Command {
@@ -11,6 +11,12 @@ class BanCommand extends Command {
     }
 
     execute(msg, args) {
+        if (args.length === 0) {
+           msg.channel.send(new MessageEmbed({
+               color: 0x89023e
+           }))
+        }
+
         let user = msg.guild.members.resolve(args[0]);
         if (user) {
             msg.guild.members.ban(user).then(() => {

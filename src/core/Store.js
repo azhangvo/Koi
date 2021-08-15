@@ -2,7 +2,7 @@ import fs from "fs";
 
 class Store {
     static default_store = { prefix: "ඞ" };
-    static default_server_config = { channels: { suggestions: undefined } };
+    static default_server_config = { channels: { suggestions: undefined }, buttonroles: { channels: {}, roles: {}} };
 
     constructor(path) {
         this.path = path;
