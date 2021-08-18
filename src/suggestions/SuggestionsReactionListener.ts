@@ -15,7 +15,7 @@ class SuggestionsReactionListener extends ReactionListener {
         if (!event.user || event.user.bot) return false;
         let { reaction } = event;
         let msg = reaction.message;
-        if (msg.author.id !== this.store.get("info.userid")) {
+        if (msg.author?.id !== this.store.get("info.userid")) {
             return false;
         }
         if (msg.embeds.length !== 1) return false;
@@ -37,13 +37,20 @@ class SuggestionsReactionListener extends ReactionListener {
             embed.setColor(0xeeeeee);
             if (old_embed.author)
                 embed.setAuthor(
-                    old_embed.author.name,
+                    old_embed.author.name || "",
                     old_embed.author.iconURL,
                     old_embed.author.url
                 );
-            embed.setTitle(old_embed.title);
-            embed.setDescription(old_embed.description);
-            if (old_embed.footer) embed.setFooter(old_embed.footer.text);
+            if (old_embed.title != null) {
+                embed.setTitle(old_embed.title);
+            }
+            if (old_embed.description != null) {
+                embed.setDescription(old_embed.description);
+            }
+            if (old_embed.footer)
+                if (old_embed.footer.text != null) {
+                    embed.setFooter(old_embed.footer.text);
+                }
 
             let positive_votes = (msg.reactions.resolve("✅")?.count || 1) - 1;
             let negative_votes = (msg.reactions.resolve("❌")?.count || 1) - 1;
@@ -63,20 +70,16 @@ class SuggestionsReactionListener extends ReactionListener {
                 ).toFixed(3)}\``
             );
 
-            reaction.message.edit({ embed });
+            reaction.message.edit({ embeds: [embed] });
 
             if (positive_votes >= 7 && old_embed.fields[0].name === "Voting") {
                 if (!msg.guild) return;
-                let owner =
-                    msg.guild.members.resolve(msg.guild.ownerID) ||
-                    msg.guild.owner;
+                let owner = msg.guild.members.resolve(msg.guild.ownerId);
 
                 if (!owner) {
                     msg.guild.fetch().then(() => {
                         if (!msg.guild) return;
-                        owner =
-                            msg.guild.members.resolve(msg.guild.ownerID) ||
-                            msg.guild.owner;
+                        owner = msg.guild.members.resolve(msg.guild.ownerId);
                         if (owner) msg.channel.send(owner.toString());
                     });
                 } else {

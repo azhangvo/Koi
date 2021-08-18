@@ -7,20 +7,22 @@ class SuggestionsCommand extends Command {
     }
 
     async execute(msg: Message, args: string[]) {
-        if(!msg.guild || !msg.author)
-            return
+        if (!msg.guild || !msg.author) return;
         const suggestions_channel = msg.guild.channels.resolve(
             this.store.getServerConfig(msg.guild, "channels.suggestions")
         );
 
-        if (suggestions_channel === null || !(suggestions_channel instanceof TextChannel)) {
+        if (
+            suggestions_channel === null ||
+            !(suggestions_channel instanceof TextChannel)
+        ) {
             const reply_embed = new MessageEmbed();
             reply_embed.setColor(0x89023e);
             reply_embed.setDescription(
                 "The suggestions channel for this server is not set or invalid. Notify a server owner or admin if this is an issue."
             );
 
-            msg.channel.send(reply_embed);
+            msg.channel.send({ embeds: [reply_embed] });
             return;
         }
 
@@ -28,7 +30,7 @@ class SuggestionsCommand extends Command {
         reply_embed.setColor(0xef8354);
         reply_embed.setDescription("Creating your suggestion...");
 
-        let reply = msg.channel.send(reply_embed);
+        let reply = msg.channel.send({ embeds: [reply_embed] });
         const embed = new MessageEmbed();
         embed.setColor(0xeeeeee);
         embed.setAuthor(msg.author.tag, msg.author.avatarURL() || "", msg.url);
@@ -40,18 +42,24 @@ class SuggestionsCommand extends Command {
 
         embed.addField("Voting", `0 ✅ \`0.000\` | 0 ❌ \`0.000\``);
 
-        suggestions_channel.send(embed).then((suggestion: Message) => {
-            suggestion.react("✅").then(() => {
-                suggestion.react("❌").then(() => {
-                    reply.then((reply) => {
-                        reply_embed.setDescription(
-                            `Created your [suggestion](${suggestion.url})`
-                        );
-                        reply.edit({ embed: reply_embed }).catch(console.log);
+        suggestions_channel
+            .send({
+                embeds: [embed],
+            })
+            .then((suggestion: Message) => {
+                suggestion.react("✅").then(() => {
+                    suggestion.react("❌").then(() => {
+                        reply.then((reply) => {
+                            reply_embed.setDescription(
+                                `Created your [suggestion](${suggestion.url})`
+                            );
+                            reply
+                                .edit({ embeds: [reply_embed] })
+                                .catch(console.log);
+                        });
                     });
                 });
             });
-        });
     }
 }
 

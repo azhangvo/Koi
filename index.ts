@@ -2,11 +2,12 @@ import fs from "fs";
 
 const config = JSON.parse(fs.readFileSync("./config.json").toString()); // Message Tau#0001 for more information
 
-import Discord from "discord.js";
+import Discord, { Intents } from "discord.js";
 
 const client = new Discord.Client({
+    intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_INTEGRATIONS],
     partials: ["MESSAGE", "CHANNEL", "REACTION"],
-    disableMentions: "everyone",
+    allowedMentions: { parse: ["users"] },
 });
 
 import EventHandler from "./src/core/EventHandler";
@@ -20,12 +21,13 @@ import SuggestionsReactionListener from "./src/suggestions/SuggestionsReactionLi
 import BanCommand from "./src/moderation/ban/BanCommand";
 import PurgeCommand from "./src/moderation/purge/PurgeCommand";
 import ButtonRolesCommand from "./src/moderation/roles/ButtonRolesCommand";
+import ButtonRolesInteractionListener from "./src/moderation/roles/ButtonRolesInteractionListener";
 
 client.on("ready", () => {
-    if(client.user != null) {
+    if (client.user != null) {
         console.log(`Logged in as ${client.user.tag}!`);
     } else {
-        console.log("Client User is null! Please terminate this instance.")
+        console.log("Client User is null! Please terminate this instance.");
     }
 });
 
@@ -41,6 +43,7 @@ handler.registerCommand(PurgeCommand);
 handler.registerCommand(ButtonRolesCommand);
 handler.registerListener(HelloWorldListener);
 handler.registerReactionListener(SuggestionsReactionListener);
+handler.registerInteractionListener(ButtonRolesInteractionListener);
 
 handler.initialize();
 
@@ -49,6 +52,8 @@ store.initialize();
 client.login(config["token"]).then(() => {
     if (client.user != null) {
         store.set("info.userid", client.user.id);
+        store.set("info.usertag", client.user.tag)
+        store.set("info.usericon", client.user.avatarURL());
     } else {
         console.log(
             "UserID is null! Please terminate this instance and try again"

@@ -17,19 +17,23 @@ class ServerConfigCommand extends Command {
         if (!msg.guild) return;
 
         if (this.store.setServerConfig(msg.guild, args[0], args[1])) {
-            await msg.channel.send(
-                new MessageEmbed({
-                    color: Constants.black,
-                    description: `Successfully set ${args[0]} to ${args[1]}`,
-                })
-            );
+            await msg.channel.send({
+                embeds: [
+                    new MessageEmbed({
+                        color: Constants.black,
+                        description: `Successfully set ${args[0]} to ${args[1]}`,
+                    }),
+                ],
+            });
         } else {
-            await msg.channel.send(
-                new MessageEmbed({
-                    color: Constants.red,
-                    description: `Failed to set ${args[0]} to ${args[1]}. Perhaps check your spelling?`,
-                })
-            );
+            await msg.channel.send({
+                embeds: [
+                    new MessageEmbed({
+                        color: Constants.red,
+                        description: `Failed to set ${args[0]} to ${args[1]}. Perhaps check your spelling?`,
+                    }),
+                ],
+            });
         }
     }
 }

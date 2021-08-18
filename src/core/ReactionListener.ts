@@ -1,4 +1,4 @@
-import { MessageReaction, User, PartialUser } from "discord.js";
+import { MessageReaction, User, PartialUser, PartialMessageReaction } from "discord.js";
 import Store from "./Store";
 
 class ReactionListener {
@@ -12,7 +12,7 @@ class ReactionListener {
     }
 
     checkPermission(event: {
-        reaction: MessageReaction;
+        reaction: MessageReaction | PartialMessageReaction;
         user: User | PartialUser;
         type: string;
     }): boolean {
@@ -20,7 +20,7 @@ class ReactionListener {
     }
 
     checkConditions(event: {
-        reaction: MessageReaction;
+        reaction: MessageReaction | PartialMessageReaction;
         user: User | PartialUser;
         type: string;
     }): boolean {
@@ -28,7 +28,7 @@ class ReactionListener {
     }
 
     run(event: {
-        reaction: MessageReaction;
+        reaction: MessageReaction | PartialMessageReaction;
         user: User | PartialUser;
         type: string;
     }): boolean {
@@ -42,7 +42,7 @@ class ReactionListener {
     }
 
     execute(event: {
-        reaction: MessageReaction;
+        reaction: MessageReaction | PartialMessageReaction;
         user: User | PartialUser;
         type: string;
     }) {

@@ -21,7 +21,7 @@
   "homepage": "https://github.com/azhangvo/WHSBot#readme",
   "dependencies": {
     "@types/node": "^16.6.1",
-    "discord.js": "^12.5.1",
+    "discord.js": "^13.1.0",
     "fs": "^0.0.1-security"
   },
   "devDependencies": {

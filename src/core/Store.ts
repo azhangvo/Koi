@@ -5,7 +5,7 @@ class Store {
     static default_store = { prefix: "ඞ" };
     static default_server_config = {
         channels: { suggestions: undefined },
-        buttonroles: { channels: {}, roles: {} },
+        buttonroles: { channel: "", messages: {}, roles: {} },
     };
     private readonly path: string;
     private data: any;

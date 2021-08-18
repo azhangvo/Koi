@@ -9,24 +9,26 @@ class BanCommand extends Command {
     }
 
     checkPermission(msg: Message) {
-        if(msg.member == null) {
-            return false
+        if (msg.member == null) {
+            return false;
         }
         return msg.member.permissions.has("MANAGE_GUILD", true);
     }
 
     async execute(msg: Message, args: string | any[]) {
         if (args.length === 0) {
-            await msg.channel.send(
-                new MessageEmbed({
-                    color: 0x89023e,
-                    description: "Usage: \`ban <id>\`"
-                })
-            );
+            await msg.channel.send({
+                embeds: [
+                    new MessageEmbed({
+                        color: Constants.red,
+                        description: "Usage: `ban <id>`",
+                    }),
+                ],
+            });
         }
 
-        if(msg.guild == null) {
-            return
+        if (msg.guild == null) {
+            return;
         }
 
         let user = msg.guild.members.resolve(args[0]);
@@ -34,29 +36,35 @@ class BanCommand extends Command {
             msg.guild.members
                 .ban(user)
                 .then(() => {
-                    if(user) {
-                        msg.channel.send(
-                            new MessageEmbed({
-                                color: Constants.black,
-                                description: `Banned! Goodbye ${user.toString()}`,
-                            })
-                        );
+                    if (user) {
+                        msg.channel.send({
+                            embeds: [
+                                new MessageEmbed({
+                                    color: Constants.black,
+                                    description: `Banned! Goodbye ${user.toString()}`,
+                                }),
+                            ],
+                        });
                     } else {
-                        msg.channel.send(
-                            new MessageEmbed({
-                                color: Constants.red,
-                                description: "Something went wrong..."
-                            })
-                        )
+                        msg.channel.send({
+                            embeds: [
+                                new MessageEmbed({
+                                    color: Constants.red,
+                                    description: "Something went wrong...",
+                                }),
+                            ],
+                        });
                     }
                 })
                 .catch(() => {
-                    msg.channel.send(
-                        new MessageEmbed({
-                            color: Constants.red,
-                            description: "No permission to ban",
-                        })
-                    );
+                    msg.channel.send({
+                        embeds: [
+                            new MessageEmbed({
+                                color: Constants.red,
+                                description: "No permission to ban",
+                            }),
+                        ],
+                    });
                 });
         }
     }
