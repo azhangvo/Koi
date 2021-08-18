@@ -112,7 +112,96 @@ class ButtonRolesCommand extends Command {
                     });
                     return;
                 case "reload": {
+                    let stored_channel_id: string = this.store.getServerConfig(
+                        msg.guild,
+                        "buttonroles.channel"
+                    );
+                    try {
+                        await msg.guild?.channels.fetch(stored_channel_id);
+                    } catch (e) {
+                        if (!(e instanceof DiscordAPIError)) {
+                            throw e;
+                        }
+                    }
+                    let channel:
+                        | ThreadChannel
+                        | GuildChannel
+                        | null
+                        | undefined =
+                        msg.guild?.channels.resolve(stored_channel_id);
 
+                    if (!channel) {
+                        await msg.channel.send({
+                            embeds: [
+                                new MessageEmbed({
+                                    color: Constants.red,
+                                    description: `Channel is either not set or cannot be found by the bot. Use \`roles setup <channel id>\` to setup for the first time.`,
+                                }),
+                            ],
+                        });
+                        return;
+                    }
+                    if (!(channel instanceof TextChannel)) {
+                        await msg.channel.send({
+                            embeds: [
+                                new MessageEmbed({
+                                    color: Constants.red,
+                                    description: `Channel \`${stored_channel_id}\` is not a text channel. How did this happen?`,
+                                }),
+                            ],
+                        });
+                        return;
+                    }
+
+                    let progressMessage = await msg.channel.send({
+                        embeds: [
+                            new MessageEmbed({
+                                color: Constants.orange,
+                                description: "Reloading role buttons...",
+                            }),
+                        ],
+                    });
+
+                    let data = this.store.getServerConfig(
+                        msg.guild,
+                        "buttonroles.messages"
+                    );
+
+                    let roles_data = this.store.getServerConfig(
+                        msg.guild,
+                        "buttonroles.roles"
+                    );
+
+                    for (let category in data) {
+                        if (!data.hasOwnProperty(category)) continue;
+                        if (!roles_data.hasOwnProperty(category)) continue;
+                        let messages: string[] = data[category];
+                        for (let i = 0; i < messages.length; i++) {
+                            if (i != 0) continue; // Since multiple messages are not currently supported for a single category
+                            let message: string = messages[i];
+                            try {
+                                await channel.messages.fetch(message);
+                            } catch (e) {
+                                if (!(e instanceof DiscordAPIError)) throw e;
+                            }
+                            let oldMessage = channel.messages.resolve(message)
+                            if (oldMessage) {
+                                await oldMessage.edit(this.generateButtonsMessage(category, roles_data[category]))
+                            } else {
+                                let sentMessage = await channel.send(this.generateButtonsMessage(category, roles_data[category]))
+                                data[category] = [sentMessage.id];
+                            }
+                        }
+                    }
+
+                    progressMessage.edit({
+                        embeds: [
+                            new MessageEmbed({
+                                color: Constants.black,
+                                description: `Finished reloading up roles in #${channel.name}. Enjoy!`,
+                            }),
+                        ],
+                    });
                     return;
                 }
                 default:
