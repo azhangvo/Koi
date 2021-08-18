@@ -54,7 +54,7 @@ class ButtonRolesCommand extends Command {
                 if (i >= num_options) break;
                 let button: MessageButton = new MessageButton()
                     .setCustomId(`buttonrole-${options[i][1]}`)
-                    .setLabel(`Toggle ${options[i][0]}`)
+                    .setLabel(`${options[i][0]}`)
                     .setStyle("PRIMARY");
                 row.addComponents(button);
                 i++;
@@ -172,9 +172,12 @@ class ButtonRolesCommand extends Command {
                         "buttonroles.roles"
                     );
 
-                    for (let category in data) {
-                        if (!data.hasOwnProperty(category)) continue;
+                    for (let category in roles_data) {
                         if (!roles_data.hasOwnProperty(category)) continue;
+                        if (!data.hasOwnProperty(category))  {
+                            let sentMessage = await channel.send(this.generateButtonsMessage(category, roles_data[category]))
+                            data[category] = [sentMessage.id];
+                        }
                         let messages: string[] = data[category];
                         for (let i = 0; i < messages.length; i++) {
                             if (i != 0) continue; // Since multiple messages are not currently supported for a single category
