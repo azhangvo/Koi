@@ -64,7 +64,10 @@ class Store {
         return this.get(`${guild_key}.${key}`);
     }
 
-    setServerConfig(guild: { id: any }, key: any, value: any) {
+    setServerConfig(guild: Guild | null, key: any, value: any) {
+        if (guild == null) {
+            return false;
+        }
         let guild_key = `guilds.${guild.id}`;
         if (!this._exists(key, Store.default_server_config)) {
             return false;

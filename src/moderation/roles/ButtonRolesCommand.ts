@@ -1,5 +1,6 @@
 import Command from "../../core/Command";
 import {
+    DiscordAPIError,
     GuildChannel,
     Message,
     MessageActionRow,
@@ -87,17 +88,6 @@ class ButtonRolesCommand extends Command {
                             }),
                         ],
                     });
-                    if (this.store.getServerConfig(msg.guild, "") === null) {
-                        await msg.channel.send({
-                            embeds: [
-                                new MessageEmbed({
-                                    color: Constants.orange,
-                                    description: "Setting up...",
-                                }),
-                            ],
-                        });
-                    } else {
-                    }
                     break;
                 case "add":
                     await msg.channel.send({
@@ -122,6 +112,7 @@ class ButtonRolesCommand extends Command {
                     });
                     return;
                 case "reload": {
+
                     return;
                 }
                 default:
@@ -138,99 +129,7 @@ class ButtonRolesCommand extends Command {
         } else if (args.length === 2) {
             switch (args[0]) {
                 case "setup": {
-                    let channel_id: string = this.store.getServerConfig(
-                        msg.guild,
-                        "buttonroles.channel"
-                    );
-                    let channel:
-                        | ThreadChannel
-                        | GuildChannel
-                        | null
-                        | undefined = msg.guild?.channels.resolve(channel_id);
-                    if (channel && channel_id !== args[1]) {
-                        await msg.channel.send({
-                            embeds: [
-                                new MessageEmbed({
-                                    color: Constants.red,
-                                    description: `Channel is already set to ${channel_id} which still exists, and the force flag was not set. You must force the command or delete channel if you would like to continue.\nUsage: \`roles setup ${args[1]} force\``,
-                                }),
-                            ],
-                        });
-                        return;
-                    }
-                    channel_id = args[1];
-                    channel = msg.guild?.channels.resolve(channel_id);
-                    if (!channel || !(channel instanceof TextChannel)) {
-                        await msg.channel.send({
-                            embeds: [
-                                new MessageEmbed({
-                                    color: Constants.red,
-                                    description: `Channel \`${channel_id}\` does not exist or channel is not a text channel.`,
-                                }),
-                            ],
-                        });
-                        return;
-                    }
-
-                    let data = this.store.getServerConfig(
-                        msg.guild,
-                        "buttonroles.messages"
-                    );
-
-                    let message_exists: boolean = false;
-                    for (let category in data) {
-                        if (!data.hasOwnProperty(category)) continue;
-                        let messages: string[] = data[category];
-                        for (let i in messages) {
-                            let message: string = messages[i];
-                            if (channel.messages.resolve(message)) {
-                                message_exists = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (message_exists) {
-                        msg.channel.send({
-                            embeds: [
-                                new MessageEmbed({
-                                    color: Constants.red,
-                                    description: `One or more previous buttons already exists. You must force the command or delete previous messages if you would like to continue.\nUsage: \`roles setup ${args[1]} force\``,
-                                }),
-                            ],
-                        });
-                    }
-
-                    let progressMessage = await msg.channel.send({
-                        embeds: [
-                            new MessageEmbed({
-                                color: Constants.orange,
-                                description: "Setting up...",
-                            }),
-                        ],
-                    });
-
-                    let roles_data = this.store.getServerConfig(
-                        msg.guild,
-                        "buttonroles.roles"
-                    );
-                    for (let category in roles_data) {
-                        if (!roles_data.hasOwnProperty(category)) continue;
-                        await channel.send(
-                            this.generateButtonsMessage(
-                                category,
-                                roles_data[category]
-                            )
-                        );
-                    }
-
-                    progressMessage.edit({
-                        embeds: [
-                            new MessageEmbed({
-                                color: Constants.black,
-                                description: `Finished setting up roles in #${channel.name}. Enjoy!`,
-                            }),
-                        ],
-                    });
+                    await this.setup(msg, args[1], false);
 
                     return;
                 }
@@ -273,17 +172,12 @@ class ButtonRolesCommand extends Command {
                             }),
                         ],
                     });
-                    break;
+                    return;
                 case "setup":
-                    await msg.channel.send({
-                        embeds: [
-                            new MessageEmbed({
-                                color: Constants.red,
-                                description: `Force setup is not implemented yet.`,
-                            }),
-                        ],
-                    });
-                    break;
+                    if (args[2] === "force")
+                        await this.setup(msg, args[1], true);
+
+                    return;
                 default:
                     await msg.channel.send({
                         embeds: [
@@ -293,7 +187,7 @@ class ButtonRolesCommand extends Command {
                             }),
                         ],
                     });
-                    break;
+                    return;
             }
         } else if (args.length === 4) {
             switch (args[0]) {
@@ -442,6 +336,131 @@ class ButtonRolesCommand extends Command {
                 new MessageEmbed({
                     color: 0x89023e,
                     description: `The role \`${name}\` was not found. Make sure you are using a display name, not an ID.`,
+                }),
+            ],
+        });
+    }
+
+    async setup(msg: Message, channel_id: string, force: boolean) {
+        let stored_channel_id: string = this.store.getServerConfig(
+            msg.guild,
+            "buttonroles.channel"
+        );
+        try {
+            await msg.guild?.channels.fetch(stored_channel_id);
+        } catch (e) {
+            if (!(e instanceof DiscordAPIError)) {
+                throw e;
+            }
+        }
+        let channel: ThreadChannel | GuildChannel | null | undefined =
+            msg.guild?.channels.resolve(stored_channel_id);
+
+        if (channel && stored_channel_id !== channel_id && !force) {
+            await msg.channel.send({
+                embeds: [
+                    new MessageEmbed({
+                        color: Constants.red,
+                        description: `Channel is already set to ${stored_channel_id} which still exists, and the force flag was not set. You must force the command or delete channel if you would like to continue.\nUsage: \`roles setup ${channel_id} force\``,
+                    }),
+                ],
+            });
+            return;
+        }
+
+        channel = msg.guild?.channels.resolve(channel_id);
+        if (!channel || !(channel instanceof TextChannel)) {
+            await msg.channel.send({
+                embeds: [
+                    new MessageEmbed({
+                        color: Constants.red,
+                        description: `Channel \`${channel_id}\` does not exist or channel is not a text channel.`,
+                    }),
+                ],
+            });
+            return;
+        }
+
+        let data = this.store.getServerConfig(
+            msg.guild,
+            "buttonroles.messages"
+        );
+
+        let message_exists: boolean = false;
+        for (let category in data) {
+            if (!data.hasOwnProperty(category)) continue;
+            let messages: string[] = data[category];
+            for (let i in messages) {
+                let message: string = messages[i];
+                try {
+                    if (await channel.messages.fetch(message)) {
+                        message_exists = true;
+                        break;
+                    }
+                } catch (e) {
+                    if (!(e instanceof DiscordAPIError)) {
+                        throw e;
+                    }
+                }
+            }
+        }
+        if (message_exists && !force) {
+            msg.channel.send({
+                embeds: [
+                    new MessageEmbed({
+                        color: Constants.red,
+                        description: `One or more previous buttons already exists. You must force the command or delete previous messages if you would like to continue.\nUsage: \`roles setup ${channel_id} force\``,
+                    }),
+                ],
+            });
+            return;
+        }
+
+        let progressMessage = await msg.channel.send({
+            embeds: [
+                new MessageEmbed({
+                    color: Constants.orange,
+                    description: "Setting up...",
+                }),
+            ],
+        });
+
+        if (
+            !this.store.setServerConfig(
+                msg.guild,
+                "buttonroles.channel",
+                channel_id
+            )
+        ) {
+            await progressMessage.edit({
+                embeds: [
+                    new MessageEmbed({
+                        color: Constants.red,
+                        description:
+                            "Something went wrong while saving configuration. Please contact the maintainer of this bot.",
+                    }),
+                ],
+            });
+            return;
+        }
+
+        let roles_data = this.store.getServerConfig(
+            msg.guild,
+            "buttonroles.roles"
+        );
+        for (let category in roles_data) {
+            if (!roles_data.hasOwnProperty(category)) continue;
+            let sentMessage = await channel.send(
+                this.generateButtonsMessage(category, roles_data[category])
+            );
+            data[category] = [sentMessage.id];
+        }
+
+        progressMessage.edit({
+            embeds: [
+                new MessageEmbed({
+                    color: Constants.black,
+                    description: `Finished setting up roles in #${channel.name}. Enjoy!`,
                 }),
             ],
         });
