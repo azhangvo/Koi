@@ -1,15 +1,5 @@
 import fs from "fs";
-
-const config = JSON.parse(fs.readFileSync("./config.json").toString()); // Message Tau#0001 for more information
-
 import Discord, { Intents } from "discord.js";
-
-const client = new Discord.Client({
-    intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_INTEGRATIONS],
-    partials: ["MESSAGE", "CHANNEL", "REACTION"],
-    allowedMentions: { parse: ["users"] },
-});
-
 import EventHandler from "./src/core/EventHandler";
 import SuggestionsCommand from "./src/suggestions/SuggestionsCommand";
 import HelloWorldListener from "./src/autoreply/HelloWorldListener";
@@ -22,6 +12,23 @@ import BanCommand from "./src/moderation/ban/BanCommand";
 import PurgeCommand from "./src/moderation/purge/PurgeCommand";
 import ButtonRolesCommand from "./src/moderation/roles/ButtonRolesCommand";
 import ButtonRolesInteractionListener from "./src/moderation/roles/ButtonRolesInteractionListener";
+import AnimeCommand from "./src/fun/anime/AnimeCommand";
+import PlayCommand from "./src/music/PlayCommand";
+
+const config = JSON.parse(fs.readFileSync("./config.json").toString()); // Message Tau#0001 for more information
+
+const client = new Discord.Client({
+    intents: [
+        Intents.FLAGS.GUILDS,
+        Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+        Intents.FLAGS.GUILD_MESSAGES,
+        Intents.FLAGS.GUILD_MEMBERS,
+        Intents.FLAGS.GUILD_INTEGRATIONS,
+        Intents.FLAGS.GUILD_VOICE_STATES,
+    ],
+    partials: ["MESSAGE", "CHANNEL", "REACTION"],
+    allowedMentions: { parse: ["users"] },
+});
 
 client.on("ready", () => {
     if (client.user != null) {
@@ -36,11 +43,16 @@ const store = new Store(path.resolve("./store.json"));
 let prefix: string = store.get("prefix");
 const handler: EventHandler = new EventHandler(client, store, prefix);
 
+handler.registerCommand(AnimeCommand);
+
 handler.registerCommand(SuggestionsCommand);
 handler.registerCommand(ServerConfigCommand);
 handler.registerCommand(BanCommand);
 handler.registerCommand(PurgeCommand);
 handler.registerCommand(ButtonRolesCommand);
+
+handler.registerCommand(PlayCommand);
+
 handler.registerListener(HelloWorldListener);
 handler.registerReactionListener(SuggestionsReactionListener);
 handler.registerInteractionListener(ButtonRolesInteractionListener);
@@ -52,7 +64,7 @@ store.initialize();
 client.login(config["token"]).then(() => {
     if (client.user != null) {
         store.set("info.userid", client.user.id);
-        store.set("info.usertag", client.user.tag)
+        store.set("info.usertag", client.user.tag);
         store.set("info.usericon", client.user.avatarURL());
     } else {
         console.log(

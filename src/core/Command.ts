@@ -6,7 +6,7 @@ class Command {
     private readonly args: number;
     protected readonly prefix: string;
     private readonly command: string;
-    private aliases: string[];
+    protected aliases: string[];
 
     constructor(
         store: Store,
@@ -38,12 +38,15 @@ class Command {
     }
 
     async run(msg: Message) {
-        if (
-            msg.content
-                .toLowerCase()
-                .startsWith(this.getPrefix() + this.getCommand() + " ") ||
-            msg.content.toLowerCase() === this.getPrefix() + this.getCommand()
-        ) {
+        let prefix: string = this.getPrefix();
+        let msgLowerCase = msg.content.toLowerCase();
+        let willRun: boolean = msgLowerCase.startsWith(prefix + this.getCommand()) || msgLowerCase === prefix + this.getCommand();
+        for (let idx in this.aliases) {
+            let alias: string = this.aliases[idx]
+            willRun = willRun || (msgLowerCase.startsWith(prefix + alias) || msgLowerCase === (prefix + alias));
+        }
+
+        if (willRun) {
             if (this.checkPermission(msg)) {
                 let args = [];
                 if (this.args > 0) {
@@ -52,7 +55,7 @@ class Command {
                     while (
                         args.length < this.args - 1 &&
                         preprocessed_args.length > 0
-                    ) {
+                        ) {
                         args.push(preprocessed_args[0]);
                         preprocessed_args.shift();
                     }

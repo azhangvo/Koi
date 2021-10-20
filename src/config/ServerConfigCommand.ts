@@ -16,6 +16,18 @@ class ServerConfigCommand extends Command {
     async execute(msg: Message, args: string[]) {
         if (!msg.guild) return;
 
+        if(args.length !== 2) {
+            await msg.channel.send({
+                embeds: [
+                    new MessageEmbed({
+                        color: Constants.red,
+                        description: `This command requires two arguments, the option to set, and the value to set it to. The current options are \`channels.suggestions\`.`,
+                    }),
+                ],
+            });
+            return
+        }
+
         if (this.store.setServerConfig(msg.guild, args[0], args[1])) {
             await msg.channel.send({
                 embeds: [

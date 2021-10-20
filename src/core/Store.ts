@@ -1,5 +1,6 @@
 import { Guild } from "discord.js";
 import fs from "fs";
+import GuildContract from "../music/GuildContract";
 
 class Store {
     static default_store = { prefix: "ඞ" };
@@ -9,6 +10,9 @@ class Store {
     };
     private readonly path: string;
     private data: any;
+    private instance_data: any;
+
+    music_contracts: {[key: string]: GuildContract} = {}
 
     constructor(path: string) {
         this.path = path;
@@ -20,9 +24,9 @@ class Store {
         this.data = JSON.parse(fs.readFileSync(this.path).toString());
     }
 
-    set(key: string, value: any) {
+    _set(key: string, value: any, json: any) {
         let keys: string[] = key.split(".");
-        let cur = this.data;
+        let cur = json;
         for (let i = 0; i < keys.length - 1; i++) {
             if (!cur.hasOwnProperty(keys[i])) cur[keys[i]] = {};
             if (typeof cur[keys[i]] !== "object") return false;
@@ -30,6 +34,14 @@ class Store {
         }
         cur[keys[keys.length - 1]] = value;
         return true;
+    }
+
+    set(key: string, value: any) {
+        this._set(key, value, this.data)
+    }
+
+    instance_set(key: string, value: any) {
+        this._set(key, value, this.instance_data)
     }
 
     _get(key: string, json: any) {
@@ -47,6 +59,10 @@ class Store {
         return this._get(key, this.data);
     }
 
+    instance_get(key: string) {
+        return this._get(key, this.instance_data);
+    }
+
     getServerConfig(guild: Guild | null, key: any) {
         if (guild == null) {
             return null;
@@ -58,7 +74,7 @@ class Store {
             }
             this.set(
                 `${guild_key}.${key}`,
-                this._get(key, Store.default_server_config)
+                this._get(key, JSON.parse(JSON.stringify(Store.default_server_config)))
             );
         }
         return this.get(`${guild_key}.${key}`);
