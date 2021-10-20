@@ -55,10 +55,10 @@ class ParsedCommand extends Command {
     async run(msg: Message) {
         let prefix: string = this.getPrefix();
         let msgLowerCase = msg.content.toLowerCase();
-        let willRun: boolean = msgLowerCase.startsWith(prefix + this.getCommand()) || msgLowerCase === prefix + this.getCommand();
+        let willRun: boolean = msgLowerCase.startsWith(prefix + this.getCommand() + " ") || msgLowerCase === prefix + this.getCommand();
         for (let idx in this.aliases) {
             let alias: string = this.aliases[idx];
-            willRun = willRun || (msgLowerCase.startsWith(prefix + alias) || msgLowerCase === (prefix + alias));
+            willRun = willRun || (msgLowerCase.startsWith(prefix + alias + " ") || msgLowerCase === (prefix + alias));
         }
 
         if (willRun) {

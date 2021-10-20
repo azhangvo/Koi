@@ -6,7 +6,7 @@ import {
     VoiceConnectionStatus,
 } from "@discordjs/voice";
 import { Track } from "./Track";
-import { promisify } from 'util';
+import { promisify } from "util";
 
 const wait = promisify(setTimeout);
 
@@ -14,6 +14,7 @@ export default class GuildContract {
     public readonly voiceConnection: VoiceConnection;
     public readonly audioPlayer: AudioPlayer;
     public queue: Track[];
+    public playing: Track | undefined;
     public queueLock = false;
     public readyLock = false;
 
@@ -22,7 +23,7 @@ export default class GuildContract {
         this.audioPlayer = createAudioPlayer();
         this.queue = [];
 
-        this.voiceConnection.on('stateChange', async (_, newState) => {
+        this.voiceConnection.on("stateChange", async (_, newState) => {
             if (newState.status === VoiceConnectionStatus.Disconnected) {
                 if (newState.reason === VoiceConnectionDisconnectReason.WebSocketClose && newState.closeCode === 4014) {
                     /*
@@ -37,6 +38,7 @@ export default class GuildContract {
                         // Probably moved voice channel
                     } catch {
                         this.voiceConnection.destroy();
+                        this.playing = undefined;
                         // Probably removed from voice channel
                     }
                 } else if (this.voiceConnection.rejoinAttempts < 5) {
@@ -50,11 +52,13 @@ export default class GuildContract {
                         The disconnect in this case may be recoverable, but we have no more remaining attempts - destroy.
                     */
                     this.voiceConnection.destroy();
+                    this.playing = undefined;
                 }
             } else if (newState.status === VoiceConnectionStatus.Destroyed) {
                 /*
                     Once destroyed, stop the subscription
                 */
+                this.playing = undefined;
                 this.stop();
             } else if (
                 !this.readyLock &&
@@ -69,7 +73,10 @@ export default class GuildContract {
                 try {
                     await entersState(this.voiceConnection, VoiceConnectionStatus.Ready, 20_000);
                 } catch {
-                    if (this.voiceConnection.state.status !== VoiceConnectionStatus.Destroyed) this.voiceConnection.destroy();
+                    if (this.voiceConnection.state.status !== VoiceConnectionStatus.Destroyed) {
+                        this.voiceConnection.destroy();
+                        this.playing = undefined;
+                    }
                 } finally {
                     this.readyLock = false;
                 }
@@ -77,21 +84,21 @@ export default class GuildContract {
         });
 
         // Configure audio player
-        this.audioPlayer.on('stateChange', (oldState, newState) => {
+        this.audioPlayer.on("stateChange", (oldState, newState) => {
             if (newState.status === AudioPlayerStatus.Idle && oldState.status !== AudioPlayerStatus.Idle) {
                 // If the Idle state is entered from a non-Idle state, it means that an audio resource has finished playing.
                 // The queue is then processed to start playing the next track, if one is available.
-                const track = (oldState.resource as AudioResource<Track>).metadata
+                const track = (oldState.resource as AudioResource<Track>).metadata;
                 track.onFinish(track);
                 void this.processQueue();
             } else if (newState.status === AudioPlayerStatus.Playing) {
                 // If the Playing state has been entered, then a new track has started playback.
-                const track = (newState.resource as AudioResource<Track>).metadata
+                const track = (newState.resource as AudioResource<Track>).metadata;
                 track.onStart(track);
             }
         });
 
-        this.audioPlayer.on('error', (error) => (error.resource as AudioResource<Track>).metadata.onError(error));
+        this.audioPlayer.on("error", (error) => (error.resource as AudioResource<Track>).metadata.onError(error));
 
         voiceConnection.subscribe(this.audioPlayer);
     }
@@ -111,6 +118,7 @@ export default class GuildContract {
      */
     public stop() {
         this.queueLock = true;
+        this.playing = undefined;
         this.queue = [];
         this.audioPlayer.stop(true);
     }
@@ -132,6 +140,7 @@ export default class GuildContract {
             // Attempt to convert the Track into an AudioResource (i.e. start streaming the video)
             const resource = await nextTrack.createAudioResource();
             this.audioPlayer.play(resource);
+            this.playing = nextTrack;
             this.queueLock = false;
         } catch (error) {
             // If an error occurred, try the next item of the queue instead

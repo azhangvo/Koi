@@ -1,4 +1,4 @@
-import { getInfo } from 'ytdl-core';
+import { getInfo, MoreVideoDetails } from "ytdl-core";
 import yts from 'yt-search';
 import { AudioResource, createAudioResource, demuxProbe } from '@discordjs/voice';
 import { raw as ytdl } from 'youtube-dl-exec';
@@ -9,6 +9,7 @@ import { raw as ytdl } from 'youtube-dl-exec';
 export interface TrackData {
     url: string;
     title: string;
+    videoDetails: MoreVideoDetails;
     onStart: (t: Track) => void;
     onFinish: (t: Track) => void;
     onError: (error: Error) => void;
@@ -29,13 +30,15 @@ const noop = () => {};
 export class Track implements TrackData {
     public readonly url: string;
     public readonly title: string;
+    public readonly videoDetails: MoreVideoDetails;
     public readonly onStart: (t: Track) => void;
     public readonly onFinish: (t: Track) => void;
     public readonly onError: (error: Error) => void;
 
-    private constructor({ url, title, onStart, onFinish, onError }: TrackData) {
+    private constructor({ url, title, videoDetails, onStart, onFinish, onError }: TrackData) {
         this.url = url;
         this.title = title;
+        this.videoDetails = videoDetails;
         this.onStart = onStart;
         this.onFinish = onFinish;
         this.onError = onError;
@@ -112,6 +115,7 @@ export class Track implements TrackData {
         return new Track({
             title: info.videoDetails.title,
             url,
+            videoDetails: info.videoDetails,
             ...wrappedMethods,
         });
     }

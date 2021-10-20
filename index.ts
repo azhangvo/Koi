@@ -14,6 +14,11 @@ import ButtonRolesCommand from "./src/moderation/roles/ButtonRolesCommand";
 import ButtonRolesInteractionListener from "./src/moderation/roles/ButtonRolesInteractionListener";
 import AnimeCommand from "./src/fun/anime/AnimeCommand";
 import PlayCommand from "./src/music/PlayCommand";
+import PauseCommand from "./src/music/PauseCommand";
+import SkipCommand from "./src/music/SkipCommand";
+import QueueCommand from "./src/music/QueueCommand";
+import LeaveCommand from "./src/music/LeaveCommand";
+import ResumeCommand from "./src/music/ResumeCommand";
 
 const config = JSON.parse(fs.readFileSync("./config.json").toString()); // Message Tau#0001 for more information
 
@@ -52,6 +57,11 @@ handler.registerCommand(PurgeCommand);
 handler.registerCommand(ButtonRolesCommand);
 
 handler.registerCommand(PlayCommand);
+handler.registerCommand(PauseCommand);
+handler.registerCommand(ResumeCommand);
+handler.registerCommand(LeaveCommand);
+handler.registerCommand(SkipCommand);
+handler.registerCommand(QueueCommand);
 
 handler.registerListener(HelloWorldListener);
 handler.registerReactionListener(SuggestionsReactionListener);
@@ -68,7 +78,7 @@ client.login(config["token"]).then(() => {
         store.set("info.usericon", client.user.avatarURL());
     } else {
         console.log(
-            "UserID is null! Please terminate this instance and try again"
+            "UserID is null! Please terminate this instance and try again",
         );
     }
 });
