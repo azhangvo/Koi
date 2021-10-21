@@ -24,7 +24,7 @@ class LeaveCommand extends Command {
             return;
         }
 
-        if (msg.member.voice.channel.members.size > 1) {
+        if (msg.member.voice.channel.members.size > 2) {
             if (msg.member.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
                 contract.voiceConnection.destroy();
                 delete this.store.music_contracts[msg.guildId];

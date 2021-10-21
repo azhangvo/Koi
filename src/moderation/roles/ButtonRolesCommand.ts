@@ -11,6 +11,7 @@ import {
 } from "discord.js";
 import Store from "../../core/Store";
 import Constants from "../../core/Constants";
+import { escapeMarkdown } from "../../util/Inputs";
 
 class ButtonRolesCommand extends Command {
     constructor(store: Store, prefix: string) {
@@ -26,12 +27,12 @@ class ButtonRolesCommand extends Command {
 
     generateButtonsMessage(
         category: string,
-        options: string[][]
+        options: string[][],
     ): { embeds: MessageEmbed[]; components: MessageActionRow[] } {
         let embed = new MessageEmbed()
             .setTitle(category)
             .setDescription(
-                `\`${options.map((pair) => pair[0]).join("`, `")}\``
+                `\`${options.map((pair) => pair[0]).join("`, `")}\``,
             )
             .setColor(Constants.white)
             .setAuthor(
@@ -40,7 +41,7 @@ class ButtonRolesCommand extends Command {
                     .split("#")
                     .slice(0, -1)
                     .join("#"),
-                this.store.get("info.usericon")
+                this.store.get("info.usericon"),
             )
             .setFooter(`Koi Button Roles | ${category} category`);
 
@@ -72,7 +73,7 @@ class ButtonRolesCommand extends Command {
                     new MessageEmbed({
                         color: 0x89023e,
                         description:
-                            "Available commands are `roles setup`, `roles reload`, `roles add`, and `roles remove`",
+                            "Available commands are `roles setup`, `roles reload`, `roles add`, `roles remove`, and `roles show`",
                     }),
                 ],
             });
@@ -114,7 +115,7 @@ class ButtonRolesCommand extends Command {
                 case "reload": {
                     let stored_channel_id: string = this.store.getServerConfig(
                         msg.guild,
-                        "buttonroles.channel"
+                        "buttonroles.channel",
                     );
                     try {
                         await msg.guild?.channels.fetch(stored_channel_id);
@@ -164,18 +165,18 @@ class ButtonRolesCommand extends Command {
 
                     let data = this.store.getServerConfig(
                         msg.guild,
-                        "buttonroles.messages"
+                        "buttonroles.messages",
                     );
 
                     let roles_data = this.store.getServerConfig(
                         msg.guild,
-                        "buttonroles.roles"
+                        "buttonroles.roles",
                     );
 
                     for (let category in roles_data) {
                         if (!roles_data.hasOwnProperty(category)) continue;
-                        if (!data.hasOwnProperty(category))  {
-                            let sentMessage = await channel.send(this.generateButtonsMessage(category, roles_data[category]))
+                        if (!data.hasOwnProperty(category)) {
+                            let sentMessage = await channel.send(this.generateButtonsMessage(category, roles_data[category]));
                             data[category] = [sentMessage.id];
                         }
                         let messages: string[] = data[category];
@@ -187,11 +188,11 @@ class ButtonRolesCommand extends Command {
                             } catch (e) {
                                 if (!(e instanceof DiscordAPIError)) throw e;
                             }
-                            let oldMessage = channel.messages.resolve(message)
+                            let oldMessage = channel.messages.resolve(message);
                             if (oldMessage) {
-                                await oldMessage.edit(this.generateButtonsMessage(category, roles_data[category]))
+                                await oldMessage.edit(this.generateButtonsMessage(category, roles_data[category]));
                             } else {
-                                let sentMessage = await channel.send(this.generateButtonsMessage(category, roles_data[category]))
+                                let sentMessage = await channel.send(this.generateButtonsMessage(category, roles_data[category]));
                                 data[category] = [sentMessage.id];
                             }
                         }
@@ -205,6 +206,22 @@ class ButtonRolesCommand extends Command {
                             }),
                         ],
                     });
+                    return;
+                }
+                case "show": {
+                    let roles_data = this.store.getServerConfig(
+                        msg.guild,
+                        "buttonroles.roles",
+                    );
+
+                    let embed = new MessageEmbed();
+
+                    for (let category in roles_data) {
+                        if (!roles_data.hasOwnProperty(category)) continue;
+                        embed.addField(category, roles_data[category].map((option: string[]) => `__${escapeMarkdown(option[0])}__ -> \`${msg.guild?.roles.resolve(option[1])?.name}\` (${option[1]})`).join("\n"));
+                    }
+
+                    msg.channel.send({ embeds: [embed] });
                     return;
                 }
                 default:
@@ -301,8 +318,8 @@ class ButtonRolesCommand extends Command {
 
                     if (split.length > 2) {
                         if (
-                            split[0].startsWith('"') &&
-                            split[split.length - 2].endsWith('"')
+                            split[0].startsWith("\"") &&
+                            split[split.length - 2].endsWith("\"")
                         ) {
                             name = split.slice(0, -1).join(" ").slice(1, -1);
                         } else {
@@ -335,7 +352,7 @@ class ButtonRolesCommand extends Command {
 
                     let data = this.store.getServerConfig(
                         msg.guild,
-                        "buttonroles.roles"
+                        "buttonroles.roles",
                     ); // Dictionary with category: [ [ name, id ] ]
 
                     for (let itr_category in data) {
@@ -436,7 +453,7 @@ class ButtonRolesCommand extends Command {
     async setup(msg: Message, channel_id: string, force: boolean) {
         let stored_channel_id: string = this.store.getServerConfig(
             msg.guild,
-            "buttonroles.channel"
+            "buttonroles.channel",
         );
         try {
             await msg.guild?.channels.fetch(stored_channel_id);
@@ -475,7 +492,7 @@ class ButtonRolesCommand extends Command {
 
         let data = this.store.getServerConfig(
             msg.guild,
-            "buttonroles.messages"
+            "buttonroles.messages",
         );
 
         let message_exists: boolean = false;
@@ -521,7 +538,7 @@ class ButtonRolesCommand extends Command {
             !this.store.setServerConfig(
                 msg.guild,
                 "buttonroles.channel",
-                channel_id
+                channel_id,
             )
         ) {
             await progressMessage.edit({
@@ -538,12 +555,12 @@ class ButtonRolesCommand extends Command {
 
         let roles_data = this.store.getServerConfig(
             msg.guild,
-            "buttonroles.roles"
+            "buttonroles.roles",
         );
         for (let category in roles_data) {
             if (!roles_data.hasOwnProperty(category)) continue;
             let sentMessage = await channel.send(
-                this.generateButtonsMessage(category, roles_data[category])
+                this.generateButtonsMessage(category, roles_data[category]),
             );
             data[category] = [sentMessage.id];
         }

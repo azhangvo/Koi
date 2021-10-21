@@ -19,6 +19,8 @@ import SkipCommand from "./src/music/SkipCommand";
 import QueueCommand from "./src/music/QueueCommand";
 import LeaveCommand from "./src/music/LeaveCommand";
 import ResumeCommand from "./src/music/ResumeCommand";
+import RemoveCommand from "./src/music/RemoveCommand";
+import MoveCommand from "./src/music/MoveCommand";
 
 const config = JSON.parse(fs.readFileSync("./config.json").toString()); // Message Tau#0001 for more information
 
@@ -62,6 +64,8 @@ handler.registerCommand(ResumeCommand);
 handler.registerCommand(LeaveCommand);
 handler.registerCommand(SkipCommand);
 handler.registerCommand(QueueCommand);
+handler.registerCommand(RemoveCommand);
+handler.registerCommand(MoveCommand);
 
 handler.registerListener(HelloWorldListener);
 handler.registerReactionListener(SuggestionsReactionListener);
