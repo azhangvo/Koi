@@ -34,10 +34,14 @@ class QueueCommand extends ParsedCommand {
             page = Math.floor(queue.length / 10) + 1;
         }
 
-        const current =
-            contract.audioPlayer.state.status === AudioPlayerStatus.Idle
-                ? `Nothing is currently playing!`
-                : `Playing \`${(contract.audioPlayer.state.resource as AudioResource<Track>).metadata.title}\``;
+        let current: string;
+        if (contract.audioPlayer.state.status === AudioPlayerStatus.Idle)
+            current = `Nothing is currently playing!`;
+        else {
+            const track = (contract.audioPlayer.state.resource as AudioResource<Track>).metadata;
+            const timeElapsed = (contract.audioPlayer.state.resource as AudioResource<Track>).playbackDuration / 1000;
+            current = `Playing \`${track.title}\` (${Math.floor(timeElapsed / 60)}:${(Math.round(timeElapsed) % 60).toLocaleString("en-US", { minimumIntegerDigits: 2 })}/${Math.floor(parseInt(track.videoDetails.lengthSeconds) / 60)}:${(parseInt(track.videoDetails.lengthSeconds) % 60).toLocaleString("en-US", { minimumIntegerDigits: 2 })})`;
+        }
 
         const queue_display = queue
             .slice((page - 1) * 10, page * 10)
