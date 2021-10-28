@@ -20,7 +20,7 @@ class DiceCommand extends Command {
             await msg.channel.send(`Available commands are:
 \`-dice\` - roll a 6-sided dice
 \`-dice <sides>\` - roll a dice with a specific amount of sides
-\`-dice <stuff>\` - choose randomly from a list of comma seperated stuff
+\`-dice <stuff>\` - choose randomly from a list of comma separated stuff
 \`-dice <min> <max>\` - choose randomly between numbers in a range
 \`-dice help\` - show this help message`, Constants.black);
         } else if (args.length === 1 && !isNaN(parseFloat(args[0]))){
@@ -44,7 +44,7 @@ class DiceCommand extends Command {
             await msg.channel.send(`Command not recognized. Available commands are:
 \`-dice\` - roll a 6-sided dice
 \`-dice <sides>\` - roll a dice with a specific amount of sides
-\`-dice <stuff>\` - choose randomly from a list of comma seperated stuff
+\`-dice <stuff>\` - choose randomly from a list of comma separated stuff
 \`-dice <min> <max>\` - choose randomly between numbers in a range
 \`-dice help\` - show this help message`, Constants.black);
         }
