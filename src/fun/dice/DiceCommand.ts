@@ -1,6 +1,6 @@
 import Command from "../../core/Command";
 import { Message } from "discord.js";
-import { createBaseEmbed } from "../util/Messages";
+import { createBaseEmbed } from "../../util/Messages";
 import Store from "../../core/Store";
 import Constants from "../../core/Constants";
 
