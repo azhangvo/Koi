@@ -24,7 +24,7 @@ class DiceCommand extends Command {
 \`-dice <stuff>\` - choose randomly from a list of comma separated stuff
 \`-dice <min>-<max>\` - choose randomly between numbers in a range
 \`-dice help\` - show this help message`, Constants.black));
-        } else if (args.length === 1 && !isNaN(parseFloat(args[0]))){
+        } else if (args.length === 1 && !isNaN(parseFloat(args[0])) && parseFloat(args[0]).toString() === args[0]){
             var rand = Math.floor(Math.random() * parseFloat(args[0])) + 1;
             await msg.channel.send(createBaseEmbed("You rolled a " + rand, Constants.black));
         } else if (args.length === 1 && !isNaN(parseFloat(args[0].split("-")[0])) && !isNaN(parseFloat(args[0].split("-")[1]))){
