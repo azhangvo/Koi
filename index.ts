@@ -12,6 +12,7 @@ import BanCommand from "./src/moderation/ban/BanCommand";
 import PurgeCommand from "./src/moderation/purge/PurgeCommand";
 import ButtonRolesCommand from "./src/moderation/roles/ButtonRolesCommand";
 import ButtonRolesInteractionListener from "./src/moderation/roles/ButtonRolesInteractionListener";
+import DiceCommand from "./src/fun/dice/DiceCommand";
 import AnimeCommand from "./src/fun/anime/AnimeCommand";
 import PlayCommand from "./src/music/PlayCommand";
 import PauseCommand from "./src/music/PauseCommand";
@@ -52,6 +53,7 @@ let prefix: string = store.get("prefix");
 const handler: EventHandler = new EventHandler(client, store, prefix);
 
 handler.registerCommand(AnimeCommand);
+handler.registerCommand(DiceCommand);
 
 handler.registerCommand(SuggestionsCommand);
 handler.registerCommand(ServerConfigCommand);
