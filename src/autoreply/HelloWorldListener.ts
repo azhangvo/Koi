@@ -8,7 +8,7 @@ class HelloWorldListener extends Listener {
     }
 
     checkConditions(msg: Message): boolean {
-        return /^h+e+ll+o+,*\s*$/i.test(msg.content);
+        return /^h+e+ll+o+,*\s*$/i.test(msg.content) && this.store.getServerConfig(msg.guild, "listener.hello") === "true";
     }
 
     async execute(msg: Message) {
