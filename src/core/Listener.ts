@@ -2,7 +2,7 @@ import Store from "./Store";
 import { Message } from "discord.js";
 
 class Listener {
-    private store: Store;
+    protected store: Store;
 
     constructor(store: Store) {
         if (this.constructor === Listener) {

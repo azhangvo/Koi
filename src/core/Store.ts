@@ -7,6 +7,7 @@ class Store {
     static default_server_config = {
         channels: { suggestions: undefined },
         buttonroles: { channel: "", messages: {}, roles: {} },
+        listener: { hello: "false" }
     };
     private readonly path: string;
     private data: any;
